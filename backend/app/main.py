@@ -6,6 +6,7 @@ from typing import Optional
 
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from .processing.pushup import process_pushup
 
@@ -14,6 +15,8 @@ app = FastAPI(title="TalentTrack Processing API", version="0.1.0")
 BASE_DIR = Path(__file__).resolve().parent.parent
 WORK_DIR = BASE_DIR / "workdir"
 WORK_DIR.mkdir(parents=True, exist_ok=True)
+# Serve workdir files at /work
+app.mount("/work", StaticFiles(directory=str(WORK_DIR)), name="work")
 
 @app.post("/api/v1/process")
 async def process(
@@ -56,12 +59,15 @@ async def process(
             },
         }
 
-    annotated_video_url = result["annotated_video"]
-    csv_url = result["csv_path"]
+    # Return URLs relative to /work so client can prefix with API base URL
+    annotated_video_path = Path(result["annotated_video"]).resolve()
+    csv_path = Path(result["csv_path"]).resolve()
+    ann_rel = annotated_video_path.relative_to(WORK_DIR)
+    csv_rel = csv_path.relative_to(WORK_DIR)
     s = result["summary"]
     payload = {
-        "annotated_video_url": annotated_video_url,
-        "csv_url": csv_url,
+        "annotated_video_url": f"/work/{ann_rel.as_posix()}",
+        "csv_url": f"/work/{csv_rel.as_posix()}",
         "summary": s,
     }
     return JSONResponse(payload)

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:http/http.dart' as http;
 
 import '../../models/process.dart';
 
@@ -20,12 +21,12 @@ class _ResultPageState extends State<ResultPage> {
   void initState() {
     super.initState();
     final path = widget.response.annotatedVideoUrl;
-    if (File(path).existsSync()) {
-      _vc = VideoPlayerController.file(File(path))..initialize().then((_) {
-        setState(() {});
-        _vc!.setLooping(true);
-        _vc!.play();
-      });
+    if (path.startsWith('http')) {
+      _vc = VideoPlayerController.networkUrl(Uri.parse(path))
+        ..initialize().then((_) { setState(() {}); _vc!.setLooping(true); _vc!.play(); });
+    } else if (File(path).existsSync()) {
+      _vc = VideoPlayerController.file(File(path))
+        ..initialize().then((_) { setState(() {}); _vc!.setLooping(true); _vc!.play(); });
     }
   }
 
@@ -33,6 +34,27 @@ class _ResultPageState extends State<ResultPage> {
   void dispose() {
     _vc?.dispose();
     super.dispose();
+  }
+
+  Future<Widget> _buildCsvSnippet(String urlOrPath) async {
+    String content;
+    try {
+      if (urlOrPath.startsWith('http')) {
+        final res = await http.get(Uri.parse(urlOrPath));
+        content = res.statusCode == 200 ? res.body : 'Unable to fetch CSV';
+      } else {
+        content = await File(urlOrPath).readAsString();
+      }
+    } catch (_) {
+      content = 'CSV unavailable';
+    }
+    final preview = content.split('\n').take(4).join('\n');
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)]),
+      child: Text(preview, style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+    );
   }
 
   @override
@@ -55,11 +77,17 @@ class _ResultPageState extends State<ResultPage> {
             Text('Duration: ${s.durationSec}s'),
             const SizedBox(height: 12),
             const Text('CSV snippet:'),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)]),
-              child: const Text('count,down_time,up_time,dip_duration_sec,min_angle,correct,activity,timestamp,notes\n1,0.2,0.8,0.6,72.0,true,...'),
+            FutureBuilder<Widget>(
+              future: _buildCsvSnippet(widget.response.csvUrl),
+              builder: (context, snap) {
+                if (snap.connectionState != ConnectionState.done) {
+                  return const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(height: 40, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
+                  );
+                }
+                return snap.data ?? const SizedBox.shrink();
+              },
             ),
             const SizedBox(height: 12),
             // Gamification summary (defaults)

@@ -1,13 +1,62 @@
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import '../models/process.dart';
+import 'config.dart';
 
 class ProcessService {
-  // Stub: simulate processing delay and return fake outputs
   Future<ProcessResponse> processVideo({
     required File videoFile,
     required String activity,
     String mode = 'server',
+  }) async {
+    if (mode == 'server') {
+      return _processOnServer(videoFile: videoFile, activity: activity);
+    }
+    return _processStub(videoFile: videoFile, activity: activity);
+  }
+
+  Future<ProcessResponse> _processOnServer({
+    required File videoFile,
+    required String activity,
+  }) async {
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}/api/v1/process');
+    final req = http.MultipartRequest('POST', uri)
+      ..fields['user_id'] = 'dev'
+      ..fields['activity'] = activity
+      ..fields['mode'] = 'server'
+      ..files.add(await http.MultipartFile.fromPath('file', videoFile.path));
+
+    final streamed = await req.send();
+    final res = await http.Response.fromStream(streamed);
+    if (res.statusCode != 200) {
+      throw Exception('Server processing failed: ${res.statusCode} ${res.body}');
+    }
+    final data = _parseJson(res.body);
+    final summary = ProcessSummary(
+      activity: data['summary']['activity'] ?? activity,
+      totalReps: (data['summary']['total_reps'] ?? 0) as int,
+      correctReps: (data['summary']['correct_reps'] ?? 0) as int,
+      accuracyPct: (data['summary']['accuracy_pct'] ?? 0).toDouble(),
+      durationSec: (data['summary']['duration_sec'] ?? 0).toDouble(),
+    );
+    // The backend returns relative URLs (/work/...), prefix with base
+    String abs(String rel) {
+      if (rel.startsWith('http')) return rel;
+      return '${AppConfig.apiBaseUrl}$rel';
+    }
+    return ProcessResponse(
+      annotatedVideoUrl: abs(data['annotated_video_url'] as String),
+      csvUrl: abs(data['csv_url'] as String),
+      summary: summary,
+    );
+  }
+
+  Future<ProcessResponse> _processStub({
+    required File videoFile,
+    required String activity,
   }) async {
     await Future.delayed(const Duration(seconds: 2));
     final summary = ProcessSummary(
@@ -17,13 +66,18 @@ class ProcessService {
       accuracyPct: 83.3,
       durationSec: 30.0,
     );
-    // For now reuse input video path for preview; csv path is stubbed
     final csvPath = await _writeStubCsv(activity: activity);
     return ProcessResponse(
       annotatedVideoUrl: videoFile.path,
       csvUrl: csvPath,
       summary: summary,
     );
+  }
+
+  Map<String, dynamic> _parseJson(String body) {
+    if (body.isEmpty) return {};
+    final decoded = jsonDecode(body);
+    return decoded is Map<String, dynamic> ? decoded : {};
   }
 
   Future<String> _writeStubCsv({required String activity}) async {
