@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../workout/consent_and_mode_sheet.dart';
+import '../workout/record_video_page.dart';
+import '../workout/upload_video_flow.dart';
 
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
@@ -494,7 +497,19 @@ class _ActivityDetailPage extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(onPressed: (){
-                // Will hook to Record/Upload modal in next step
+                // Open consent + mode chooser
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => ConsentAndModeSheet(onChoose: (mode) {
+                    Navigator.of(context).pop();
+                    if (mode == 'record') {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => RecordVideoPage(activity: title)));
+                    } else {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => UploadVideoFlow(activity: title)));
+                    }
+                  }),
+                );
               }, child: const Text('Proceed to Workout')),
             )
           ],
