@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../models/process.dart';
 import '../../state/gamification_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/config_loader.dart';
 
 class ResultPage extends ConsumerStatefulWidget {
   final ProcessResponse response;
@@ -32,6 +33,24 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           setState(() => _awarded = true);
         }
       });
+    }
+    // Challenge progress and badge unlock
+    final current = ref.read(gamificationProvider).currentChallengeId;
+    if (current != null) {
+      ref.read(gamificationProvider.notifier).incChallengeProgress(current);
+      final attempts = ref.read(gamificationProvider).challengeProgress[current] ?? 0;
+      ConfigLoader.loadBadges().then((all) {
+        final forChallenge = all.where((b) => b.challengeId == current);
+        for (final b in forChallenge) {
+          if (b.type == 'milestone' && attempts == 1) {
+            ref.read(gamificationProvider.notifier).unlockBadge(b.id, coins: b.coins, xp: b.xp);
+          }
+          if (b.type == 'mastery' && attempts == 5) {
+            ref.read(gamificationProvider.notifier).unlockBadge(b.id, coins: b.coins, xp: b.xp);
+          }
+        }
+      });
+      ref.read(gamificationProvider.notifier).setCurrentChallenge(null);
     }
     if (path.startsWith('http')) {
       _vc = VideoPlayerController.networkUrl(Uri.parse(path))

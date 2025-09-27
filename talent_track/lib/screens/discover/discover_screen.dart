@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/challenge.dart';
 import '../../services/config_loader.dart';
+import 'challenge_detail_screen.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
