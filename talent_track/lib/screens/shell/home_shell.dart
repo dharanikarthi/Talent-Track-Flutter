@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/profile_provider.dart';
+import '../training/training_screen.dart';
 
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
@@ -25,7 +26,15 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           Padding(padding: EdgeInsets.only(right: 12.0), child: Icon(Icons.settings_outlined)),
         ],
       ),
-      body: Center(child: Text('${titles[_idx]} page coming soon')),
+      body: IndexedStack(
+        index: _idx,
+        children: const [
+          TrainingScreen(),
+          Center(child: Text('Discover page coming soon')),
+          Center(child: Text('Report page coming soon')),
+          Center(child: Text('Roadmap page coming soon')),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _idx,
         destinations: const [
