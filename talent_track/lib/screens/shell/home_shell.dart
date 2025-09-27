@@ -5,6 +5,7 @@ import '../../state/profile_provider.dart';
 import '../training/training_screen.dart';
 import '../discover/discover_screen.dart';
 import '../roadmap/roadmap_screen.dart';
+import '../report/report_screen.dart';
 
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
@@ -33,7 +34,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         children: const [
           TrainingScreen(),
           DiscoverScreen(),
-          Center(child: Text('Report page coming soon')),
+          ReportScreen(),
           RoadmapScreen(),
         ],
       ),
