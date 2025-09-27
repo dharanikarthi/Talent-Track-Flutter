@@ -5,8 +5,10 @@ import 'package:video_player/video_player.dart';
 import 'package:http/http.dart' as http;
 
 import '../../models/process.dart';
+import '../../state/gamification_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ResultPage extends StatefulWidget {
+class ResultPage extends ConsumerStatefulWidget {
   final ProcessResponse response;
   const ResultPage({super.key, required this.response});
 
@@ -14,13 +16,23 @@ class ResultPage extends StatefulWidget {
   State<ResultPage> createState() => _ResultPageState();
 }
 
-class _ResultPageState extends State<ResultPage> {
+class _ResultPageState extends ConsumerState<ResultPage> {
   VideoPlayerController? _vc;
 
+  bool _awarded = false;
   @override
   void initState() {
     super.initState();
     final path = widget.response.annotatedVideoUrl;
+    if (!_awarded) {
+      // Award default coins/XP on completion
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_awarded) {
+          ref.read(gamificationProvider.notifier).award(coins: 5, xp: 10);
+          setState(() => _awarded = true);
+        }
+      });
+    }
     if (path.startsWith('http')) {
       _vc = VideoPlayerController.networkUrl(Uri.parse(path))
         ..initialize().then((_) { setState(() {}); _vc!.setLooping(true); _vc!.play(); });
