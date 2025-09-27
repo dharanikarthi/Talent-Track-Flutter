@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import '../models/process.dart';
 import 'config.dart';
+import 'package:flutter/services.dart';
 
 class ProcessService {
   Future<ProcessResponse> processVideo({
@@ -12,10 +13,39 @@ class ProcessService {
     required String activity,
     String mode = 'server',
   }) async {
-    if (mode == 'server') {
-      return _processOnServer(videoFile: videoFile, activity: activity);
+    if (mode == 'ondevice' || (activity.toLowerCase().contains('push') && AppConfig.onDevicePushupPreferred)) {
+      try {
+        return await _processOnDevicePushup(videoFile: videoFile, activity: activity);
+      } catch (_) {
+        // Fallback to server
+      }
     }
-    return _processStub(videoFile: videoFile, activity: activity);
+    return _processOnServer(videoFile: videoFile, activity: activity);
+  }
+
+  static const _poseChannel = MethodChannel('talent_track/pose');
+
+  Future<ProcessResponse> _processOnDevicePushup({
+    required File videoFile,
+    required String activity,
+  }) async {
+    final data = await _poseChannel.invokeMethod<Map<dynamic, dynamic>>('analyzePushup', {
+      'videoPath': videoFile.path,
+    });
+    if (data == null) throw Exception('On-device returned null');
+    final summaryMap = data['summary'] as Map<dynamic, dynamic>;
+    final summary = ProcessSummary(
+      activity: (summaryMap['activity'] ?? activity) as String,
+      totalReps: (summaryMap['total_reps'] ?? 0) as int,
+      correctReps: (summaryMap['correct_reps'] ?? 0) as int,
+      accuracyPct: (summaryMap['accuracy_pct'] ?? 0.0).toDouble(),
+      durationSec: (summaryMap['duration_sec'] ?? 0.0).toDouble(),
+    );
+    return ProcessResponse(
+      annotatedVideoUrl: (data['annotated_video_url'] as String?) ?? videoFile.path,
+      csvUrl: (data['csv_url'] as String?) ?? '',
+      summary: summary,
+    );
   }
 
   Future<ProcessResponse> _processOnServer({

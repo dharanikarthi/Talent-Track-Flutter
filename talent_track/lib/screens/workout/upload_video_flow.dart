@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../services/process_service.dart';
+import '../../services/realtime_service.dart';
 import 'result_page.dart';
+import 'live_result_page.dart';
 
 class UploadVideoFlow extends StatefulWidget {
   final String activity;
@@ -27,11 +29,21 @@ class _UploadVideoFlowState extends State<UploadVideoFlow> {
   Future<void> _process() async {
     if (_video == null) return;
     setState(()=> _processing = true);
-    final service = ProcessService();
-    final resp = await service.processVideo(videoFile: _video!, activity: widget.activity);
-    if (!mounted) return;
-    setState(()=> _processing = false);
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => ResultPage(response: resp)));
+    try {
+      // Prefer realtime path to stream CSV into UI
+      final rt = RealtimeService();
+      final job = await rt.startRealtimeProcessing(videoFile: _video!, activity: widget.activity);
+      if (!mounted) return;
+      setState(()=> _processing = false);
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => LiveResultPage(job: job)));
+    } catch (_) {
+      // Fallback to existing synchronous processing
+      final service = ProcessService();
+      final resp = await service.processVideo(videoFile: _video!, activity: widget.activity);
+      if (!mounted) return;
+      setState(()=> _processing = false);
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => ResultPage(response: resp)));
+    }
   }
 
   @override

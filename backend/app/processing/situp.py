@@ -4,6 +4,7 @@ import pandas as pd
 import mediapipe as mp
 from collections import deque
 from pathlib import Path
+import csv
 
 CSV_HEADER = [
     "count","down_time","up_time","dip_duration_sec","min_angle","correct","activity","timestamp","notes"
@@ -33,6 +34,12 @@ def process_situp(input_video: str, output_dir: str):
     fps = cap.get(cv2.CAP_PROP_FPS) or 30
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CROP_FRAME_HEIGHT)) if hasattr(cv2, 'CROP_FRAME_HEIGHT') else int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    csv_path = out_dir/"result.csv"
+    csv_file = csv_path.open('w', newline='')
+    csv_writer = csv.DictWriter(csv_file, fieldnames=CSV_HEADER)
+    csv_writer.writeheader()
+    csv_file.flush()
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out_vid = cv2.VideoWriter(str(out_dir/"annotated_output.mp4"), fourcc, fps, (width, height))
@@ -78,7 +85,7 @@ def process_situp(input_video: str, output_dir: str):
                 last_extreme = elbow_sm
             elif state == 'down' and elbow_sm - last_extreme >= MIN_DIP_CHANGE:
                 state = 'up'
-                reps.append({
+                row = {
                     'count': len(reps)+1,
                     'down_time': round(dip_start_time or 0,3),
                     'up_time': round(t,3),
@@ -88,7 +95,10 @@ def process_situp(input_video: str, output_dir: str):
                     'activity': 'situp',
                     'timestamp': round(t,3),
                     'notes': ''
-                })
+                }
+                reps.append(row)
+                csv_writer.writerow(row)
+                csv_file.flush()
                 dip_start_time = None
                 last_extreme = elbow_sm
         cv2.putText(frame, f"Sit-ups: {len(reps)}", (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,255),2)
@@ -97,17 +107,10 @@ def process_situp(input_video: str, output_dir: str):
     cap.release()
     out_vid.release()
     pose.close()
-
-    csv_path = out_dir/"result.csv"
-    if reps:
-        df = pd.DataFrame(reps)
-        for col in CSV_HEADER:
-            if col not in df.columns:
-                df[col] = ''
-        df = df[CSV_HEADER]
-        df.to_csv(csv_path, index=False)
-    else:
-        pd.DataFrame(columns=CSV_HEADER).to_csv(csv_path, index=False)
+    try:
+        csv_file.close()
+    except Exception:
+        pass
 
     return {
         "annotated_video": str(out_dir/"annotated_output.mp4"),
