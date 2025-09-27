@@ -14,7 +14,7 @@ class ResultPage extends ConsumerStatefulWidget {
   const ResultPage({super.key, required this.response});
 
   @override
-  State<ResultPage> createState() => _ResultPageState();
+  ConsumerState<ResultPage> createState() => _ResultPageState();
 }
 
 class _ResultPageState extends ConsumerState<ResultPage> {
