@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/profile_provider.dart';
 import '../training/training_screen.dart';
+import '../discover/discover_screen.dart';
+import '../roadmap/roadmap_screen.dart';
 
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
@@ -30,9 +32,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         index: _idx,
         children: const [
           TrainingScreen(),
-          Center(child: Text('Discover page coming soon')),
+          DiscoverScreen(),
           Center(child: Text('Report page coming soon')),
-          Center(child: Text('Roadmap page coming soon')),
+          RoadmapScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(

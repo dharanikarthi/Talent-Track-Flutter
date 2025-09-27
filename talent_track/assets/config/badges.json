@@ -1,0 +1,6 @@
+{
+  "badges": [
+    {"id":"pushup_milestone","name":"Push Pioneer","emoji":"💪","type":"milestone","challengeId":"pushup_streak","coins":25,"xp":50},
+    {"id":"pushup_mastery","name":"Push-up King","emoji":"👑","type":"mastery","challengeId":"pushup_streak","coins":100,"xp":200}
+  ]
+}

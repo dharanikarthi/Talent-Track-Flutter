@@ -1,0 +1,13 @@
+{
+  "categories": [
+    {"id":"full_body","name":"Full Body"},
+    {"id":"calisthenics","name":"Calisthenics"},
+    {"id":"kegel","name":"Kegel Power Boost"},
+    {"id":"lower_body","name":"Lower Body"},
+    {"id":"para","name":"Para-Athlete"}
+  ],
+  "challenges": [
+    {"id":"pushup_streak","category":"full_body","name":"Push-Up Streak","description":"Complete a set of push-ups daily.","difficulty":"Basic"},
+    {"id":"situp_challenge","category":"full_body","name":"Sit-Up Challenge","description":"Accumulate sit-ups over the week.","difficulty":"Basic"}
+  ]
+}
