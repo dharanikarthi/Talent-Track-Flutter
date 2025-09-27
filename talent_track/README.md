@@ -8,6 +8,14 @@ Light-theme mobile app to record/upload standardized athletic tests, analyze wit
 
 See docs/architecture.md, docs/api.md, and docs/runbook.md for details.
 
+Signing Android release builds (CI)
+- Add these GitHub Secrets to enable signed builds on main/tags:
+  - ANDROID_KEYSTORE_BASE64 (base64 of release.keystore)
+  - ANDROID_KEYSTORE_PASSWORD
+  - ANDROID_KEY_ALIAS
+  - ANDROID_KEY_PASSWORD
+- The workflow will decode keystore, generate key.properties, and build a signed release APK. Without secrets, a debug APK artifact is produced.
+
 # talent_track
 
 A new Flutter project.
