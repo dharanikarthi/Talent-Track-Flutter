@@ -62,7 +62,7 @@ class _ChallengeTile extends StatelessWidget {
         subtitle: Text(ch.description),
         trailing: Text(ch.difficulty),
         onTap: (){
-          // TODO: navigate to challenge details and link relevant activities
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChallengeDetailScreen(challenge: ch)));
         },
       ),
     );

@@ -7,6 +7,8 @@ import '../discover/discover_screen.dart';
 import '../roadmap/roadmap_screen.dart';
 import '../report/report_screen.dart';
 import '../profile/profile_screen.dart';
+import '../coach/coach_shell.dart';
+import '../sai/sai_shell.dart';
 
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
@@ -20,6 +22,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(profileProvider);
+    final role = profile?.role ?? 'athlete';
+    if (role == 'coach') {
+      return const CoachShell();
+    }
+    if (role == 'sai') {
+      return const Saishell();
+    }
     final name = profile?.name ?? 'Athlete';
     final titles = ['Training','Discover','Report','Roadmap'];
     return Scaffold(
