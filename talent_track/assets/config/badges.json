@@ -1,6 +1,9 @@
 {
   "badges": [
     {"id":"pushup_milestone","name":"Push Pioneer","emoji":"💪","type":"milestone","challengeId":"pushup_streak","coins":25,"xp":50},
-    {"id":"pushup_mastery","name":"Push-up King","emoji":"👑","type":"mastery","challengeId":"pushup_streak","coins":100,"xp":200}
+    {"id":"pushup_mastery","name":"Push-up King","emoji":"👑","type":"mastery","challengeId":"pushup_streak","coins":100,"xp":200},
+
+    {"id":"situp_milestone","name":"Core Rookie","emoji":"🧩","type":"milestone","challengeId":"situp_challenge","coins":25,"xp":50},
+    {"id":"situp_mastery","name":"Iron Abs","emoji":"🔥","type":"mastery","challengeId":"situp_challenge","coins":100,"xp":200}
   ]
 }
