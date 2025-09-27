@@ -9,6 +9,10 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .processing.pushup import process_pushup
+from .processing.pullup import process_pullup
+from .processing.verticaljump import process_verticaljump
+from .processing.shuttlerun import process_shuttlerun
+from .processing.situp import process_situp
 
 app = FastAPI(title="TalentTrack Processing API", version="0.1.0")
 
@@ -39,6 +43,14 @@ async def process(
     activity_lc = activity.strip().lower()
     if activity_lc in {"pushup", "push-ups", "push ups"}:
         result = process_pushup(str(input_path), str(job_dir))
+    elif activity_lc in {"pullup", "pull-ups", "pull ups"}:
+        result = process_pullup(str(input_path), str(job_dir))
+    elif activity_lc in {"verticaljump", "vertical jump"}:
+        result = process_verticaljump(str(input_path), str(job_dir))
+    elif activity_lc in {"shuttlerun", "shuttle run"}:
+        result = process_shuttlerun(str(input_path), str(job_dir))
+    elif activity_lc in {"situp", "sit-ups", "sit ups"}:
+        result = process_situp(str(input_path), str(job_dir))
     else:
         # Placeholder: copy input to annotated_output.mp4 and write empty CSV
         out_video = job_dir / "annotated_output.mp4"
