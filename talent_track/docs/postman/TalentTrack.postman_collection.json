@@ -1,0 +1,31 @@
+{
+  "info": {
+    "name": "TalentTrack API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Process Video",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": "samples/video.mp4" },
+            { "key": "user_id", "type": "text", "value": "demo" },
+            { "key": "activity", "type": "text", "value": "pushup" },
+            { "key": "mode", "type": "text", "value": "server" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/process",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "process"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": []
+}
