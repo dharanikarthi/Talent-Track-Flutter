@@ -6,6 +6,7 @@ import '../training/training_screen.dart';
 import '../discover/discover_screen.dart';
 import '../roadmap/roadmap_screen.dart';
 import '../report/report_screen.dart';
+import '../profile/profile_screen.dart';
 
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
@@ -24,9 +25,17 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_idx==0 ? 'Welcome, $name' : titles[_idx]),
-        actions: const [
-          Padding(padding: EdgeInsets.only(right: 8.0), child: Icon(Icons.account_circle_outlined)),
-          Padding(padding: EdgeInsets.only(right: 12.0), child: Icon(Icons.settings_outlined)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {},
+          ),
         ],
       ),
       body: IndexedStack(
